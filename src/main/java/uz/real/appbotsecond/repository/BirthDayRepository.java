@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import uz.real.appbotsecond.model.BirthDay;
 import uz.real.appbotsecond.model.User;
 
+import javax.xml.transform.sax.SAXTransformerFactory;
 import java.util.List;
 
 @Repository
@@ -16,10 +17,14 @@ public interface BirthDayRepository extends JpaRepository<BirthDay, Long> {
     List<BirthDay> findAllByUser(User user);
 
 
-   @Query(value="select * from birth b where b.birth_date.day =?1 and b.birth_date.monthValue= ?2", nativeQuery = true)
-    List<BirthDay> find(int day, int month);
+   @Query(value="select * from birth b where :month = date_part('month', b.birth_date) and :day = date_part('day', b.birth_date)", nativeQuery=true)
+    List<BirthDay> find(int month, int day);
 
-    Page<BirthDay> findAllByUserId_OrderByCreatedAtDesc(Long userId, Pageable pageable);
+    List<BirthDay> getAllByUserId(Long userId);
+
+    List<BirthDay> findAllByUser_Username(String username);
+
+
 
 
 }
