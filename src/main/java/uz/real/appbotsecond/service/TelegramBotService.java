@@ -14,7 +14,7 @@ public interface TelegramBotService {
 
     SendMessage myImportantMessage(long chatId, CallbackQuery callbackQuery);
 
-    SendMessage prev(String birthId, long chatId);
+    SendMessage prev(String birthId, long chatId, CallbackQuery callbackQuery);
 
     SendMessage next(String birthId, long chatId, CallbackQuery callbackQuery);
 

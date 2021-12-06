@@ -45,9 +45,9 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
         String regex = "^[0-3]?[0-9]/[0-3]?[0-9]/(?:[0-9]{2})?[0-9]{2}$";
         Pattern pattern = Pattern.compile(regex);
 
-        String regexFullName = "^[a-zA-Z0-9 ]+$";
+        String regexFullName = "^[a-zA-Z0-9 _$!']+$";
         Pattern patternFullName = Pattern.compile(regexFullName);
-
+        boolean isDate = true;
         if (update.hasMessage()) {
             Message message = update.getMessage();
             long chatId = message.getChatId();
@@ -64,26 +64,43 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                     fullName = messageText;
                     SendMessage sendMessage = new SendMessage();
                     sendMessage.setChatId(chatId);
-                    sendMessage.setText("Tug'ilgan sanasini kiriting masalan: 28/11/1998 ko'rinishida!");
+                    sendMessage.setText("Tug'ilgan sanasini kun/oy/yil ko'rinishida kiriting!");
                     try {
+                        isDate = true;
                         execute(sendMessage);
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                     }
-                } else if (pattern.matcher(messageText).matches()) {
-                    SendMessage sendMessage = telegramBotService.checkDate(messageText, message, fullName, birthId);
-                    try {
-                        execute(sendMessage);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                } else if (isDate) {
+                    if (pattern.matcher(messageText).matches()){
+                        SendMessage sendMessage = telegramBotService.checkDate(messageText, message, fullName, birthId);
+                        try {
+                            isDate = false;
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                    }else {
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(chatId);
+                        sendMessage.setText("Iltimos, tug'ilgan sanani raqamlar orqali," +
+                        " tizimda ko'rsatilgan \uD83D\uDC49 (kun/oy/yil) tartibda qaytadan kiriting!");
+                        try {
+                            isDate = true;
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
                     }
+
+
                 }
             }
         } else if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
-
+            long chatId = callbackQuery.getMessage().getChatId();
             if (callbackQuery.getData().equalsIgnoreCase("Botdan foydalanish!")) {
-                SendMessage sendMessage = telegramBotService.saveUser(callbackQuery, callbackQuery.getMessage().getChat().getId());
+                SendMessage sendMessage = telegramBotService.saveUser(callbackQuery, chatId);
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
@@ -91,7 +108,7 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                 }
             } else if (callbackQuery.getData().equalsIgnoreCase("Yana do'stlarni saqlash!")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(callbackQuery.getMessage().getChat().getId());
+                sendMessage.setChatId(chatId);
                 sendMessage.setText("Do'stingizning ismi va familyasini kiriting! masalan: Sherzod Nurmatov ko'rinishida");
                 try {
                     execute(sendMessage);
@@ -99,74 +116,74 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().equalsIgnoreCase("Muhim sanalarim!")) {
-                SendMessage sendMessage = telegramBotService.myImportantMessage(callbackQuery.getMessage().getChat().getId(), callbackQuery);
+                SendMessage sendMessage = telegramBotService.myImportantMessage(chatId, callbackQuery);
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().equalsIgnoreCase("view")) {
-                SendMessage sendMessage = telegramBotService.viewAll(callbackQuery, callbackQuery.getMessage().getChatId());
+                SendMessage sendMessage = telegramBotService.viewAll(callbackQuery, chatId);
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
-            }else if (callbackQuery.getData().equalsIgnoreCase("Orqaga!")) {
+            } else if (callbackQuery.getData().equalsIgnoreCase("Orqaga!")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(callbackQuery.getMessage().getChatId());
-                sendMessage.setText("Enter to /start or /");
+                sendMessage.setChatId(chatId);
+                sendMessage.setText("Orqaga qaytish uchun /start ni bosing!");
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
-            }
-            else if (callbackQuery.getData().substring(0, 1).equalsIgnoreCase("p")) {
-                SendMessage prev = telegramBotService.prev(callbackQuery.getData(), callbackQuery.getMessage().getChatId());
+            } else if (callbackQuery.getData().substring(0, 1).equalsIgnoreCase("p")) {
+                SendMessage prev = telegramBotService.prev(callbackQuery.getData(), chatId, callbackQuery);
                 try {
                     execute(prev);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().substring(0, 1).equalsIgnoreCase("n")) {
-                SendMessage next = telegramBotService.next(callbackQuery.getData(), callbackQuery.getMessage().getChatId(), callbackQuery);
+                SendMessage next = telegramBotService.next(callbackQuery.getData(), chatId, callbackQuery);
                 try {
                     execute(next);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().equalsIgnoreCase("add")) {
-                SendMessage add = telegramBotService.add(callbackQuery.getMessage().getChatId());
+                SendMessage add = telegramBotService.add(chatId);
                 try {
                     execute(add);
+                    birthId = 0;
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().substring(0, 1).equalsIgnoreCase("e")) {
                 birthId = Long.parseLong(callbackQuery.getData().substring(1));
-                SendMessage edit = telegramBotService.edit(callbackQuery.getData(), callbackQuery.getMessage().getChatId());
+                SendMessage edit = telegramBotService.edit(callbackQuery.getData(), chatId);
                 try {
                     execute(edit);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().substring(0, 1).equalsIgnoreCase("d")) {
-                SendMessage delete = telegramBotService.delete(callbackQuery.getData(), callbackQuery.getMessage().getChatId());
+                SendMessage delete = telegramBotService.delete(callbackQuery.getData(), chatId);
                 try {
                     execute(delete);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().substring(0, 2).equalsIgnoreCase("Ha")) {
-                SendMessage sendMessage = telegramBotService.successDelete(callbackQuery.getData(), callbackQuery.getMessage().getChatId());
+                SendMessage sendMessage = telegramBotService.successDelete(callbackQuery.getData(), chatId);
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
                 }
             } else if (callbackQuery.getData().substring(0, 2).equalsIgnoreCase("Yo")) {
-                SendMessage sendMessage = telegramBotService.notDelete(callbackQuery.getData(), callbackQuery.getMessage().getChatId());
+                SendMessage sendMessage = telegramBotService.notDelete(callbackQuery.getData(), chatId);
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
