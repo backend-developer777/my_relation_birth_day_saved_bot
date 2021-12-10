@@ -198,19 +198,17 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                             }
                         }
                     }
-                }else if (currentBirthDayId == firstBirthDayId){
+                }
+                else if (currentBirthDayId == firstBirthDayId){
                     Optional<BirthDay> byId = birthDayRepository.findById(currentBirthDayId);
                     if (byId.isPresent()){
                         BirthDay birthDay = byId.get();
                         sendMessage.setChatId(String.valueOf(chatId));
                         sendMessage.setText("Tug'ilgan sanasi: " + birthDay.getBirthDayDate() + "\nIsmi va familyasi:  " + birthDay.getFullName());
                         sendMessage.setReplyMarkup(firstBirthDayBTN(currentBirthDayId));
-                    }else {
-                        sendMessage.setChatId(String.valueOf(chatId));
-                        sendMessage.setText("iz hamma do'stlaringizni o'chirib bo'lgansiz! /start");
-                        sendMessage.setReplyMarkup(firstBirthDayBTN(currentBirthDayId));
-                    } }
+                    }
                 }
+            }
         else {
             sendMessage.setChatId(String.valueOf(chatId));
             sendMessage.setText("Siz hamma do'stlaringizni o'chirib bo'lgansiz! /start");
@@ -265,7 +263,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                 if (birthDayOptional.isPresent()) {
                     BirthDay birthDay = birthDayOptional.get();
                     sendMessage.setChatId(String.valueOf(chatId));
-                    sendMessage.setText("Tug'ilgan sanasi: " + birthDay.getBirthDayDate() + "\n + Ismi va familiyasi: " + birthDay.getFullName());
+                    sendMessage.setText("Tug'ilgan sanasi: " + birthDay.getBirthDayDate() + "\nIsmi va familiyasi: " + birthDay.getFullName());
                     sendMessage.setReplyMarkup(crudAndPaginationButtons(nextBirthId));
                     return sendMessage;
                 } else {
@@ -290,7 +288,6 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                     sendMessage.setReplyMarkup(lastBirthDayBTN(currentBirthId));
                     return sendMessage;
                 }
-
             }
         }
         return null;
