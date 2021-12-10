@@ -96,7 +96,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
         inlineRows.add(inlineKeyboardButtons);
         inlineKeyboardMarkup.setKeyboard(inlineRows);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        int day = Integer.parseInt(stringDate.substring(0,2));
+        int day = Integer.parseInt(stringDate.substring(0, 2));
         int month = Integer.parseInt(stringDate.substring(3, 5));
         int year = Integer.parseInt(stringDate.substring(6, stringDate.length()));
 
@@ -130,7 +130,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                     return sendMessage;
                 } else {
                     sendMessage.setChatId(String.valueOf(message.getChatId()));
-                    sendMessage.setText("Yilni to'g'ri kiriting, yil "+ (LocalDate.now().getYear()+1) + " dan kichik bo'lishi kerak. Siz " + year + " kiritdingiz!");
+                    sendMessage.setText("Yilni to'g'ri kiriting, yil " + (LocalDate.now().getYear() + 1) + " dan kichik bo'lishi kerak. Siz " + year + " kiritdingiz!");
                     return sendMessage;
                 }
             } else {
@@ -149,19 +149,19 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     public SendMessage myImportantMessage(long chatId, CallbackQuery callbackQuery) {
         SendMessage sendMessage = new SendMessage();
         User from = callbackQuery.getFrom();
-            Optional<uz.real.appbotsecond.model.User> byUsername = userRepository.findByChatId(String.valueOf(from.getId()));
-            if (byUsername.isPresent()) {
-                uz.real.appbotsecond.model.User user = byUsername.get();
-                List<BirthDay> birthDayList = birthDayRepository.getAllByUserId(user.getId());
-                if (birthDayList.size() > 0) {
-                    BirthDay birthDay = birthDayList.get(birthDayList.size() -1);
-                    long currentId = birthDay.getId();
-                    sendMessage.setChatId(String.valueOf(chatId));
-                    sendMessage.setText("Ismi va familyasi:  " + birthDay.getFullName() + "\nTug'ilgan sanasi:  " + birthDay.getBirthDayDate());
-                    sendMessage.setReplyMarkup( crudAndPaginationButtons(currentId));
-                    return sendMessage;
-                }
+        Optional<uz.real.appbotsecond.model.User> byUsername = userRepository.findByChatId(String.valueOf(from.getId()));
+        if (byUsername.isPresent()) {
+            uz.real.appbotsecond.model.User user = byUsername.get();
+            List<BirthDay> birthDayList = birthDayRepository.getAllByUserId(user.getId());
+            if (birthDayList.size() > 0) {
+                BirthDay birthDay = birthDayList.get(birthDayList.size() - 1);
+                long currentId = birthDay.getId();
+                sendMessage.setChatId(String.valueOf(chatId));
+                sendMessage.setText("Ismi va familyasi:  " + birthDay.getFullName() + "\nTug'ilgan sanasi:  " + birthDay.getBirthDayDate());
+                sendMessage.setReplyMarkup(crudAndPaginationButtons(currentId));
+                return sendMessage;
             }
+        }
         sendMessage.setChatId(String.valueOf(chatId));
         sendMessage.setText("Siz hozircha do'stlaringizni tug'ilgan kunini saqlamagansiz, 'Muhim sanalarni qo'shish!' tugmachasini tanlang!");
         return sendMessage;
@@ -177,50 +177,51 @@ public class TelegramBotServiceImpl implements TelegramBotService {
         if (byChatId.isPresent()) {
             uz.real.appbotsecond.model.User user = byChatId.get();
             List<BirthDay> allByUserId = birthDayRepository.getAllByUserId(user.getId());
-            long firstBirthDayId = allByUserId.get(0).getId();
-            long lastBirthDayId = allByUserId.get(allByUserId.size() - 1).getId();
-            if (currentBirthDayId > firstBirthDayId && currentBirthDayId <= lastBirthDayId) {
-                long prev = currentBirthDayId - 1;
-                Optional<BirthDay> birthDayOptional = birthDayRepository.findById(prev);
-                if (birthDayOptional.isPresent()) {
-                    BirthDay birthDay = birthDayOptional.get();
-                    sendMessage.setChatId(String.valueOf(chatId));
-                    sendMessage.setText("Tug'ilgan sanasi:  " + birthDay.getBirthDayDate() + " \n  Ismi va familyasi:  " + birthDay.getFullName());
-                    sendMessage.setReplyMarkup(crudAndPaginationButtons(prev));
-                    return sendMessage;
-                } else {
-                    while (firstBirthDayId != prev) {
-                        prev--;
-                        Optional<BirthDay> byId = birthDayRepository.findById(prev);
-                        if (byId.isPresent()) {
-                            BirthDay birthDay = byId.get();
-                            sendMessage.setChatId(String.valueOf(chatId));
-                            sendMessage.setText("Tug'ilgan sanasi:  " + birthDay.getBirthDayDate() + "\n Ismi va familyasi:  " + birthDay.getFullName());
-                            sendMessage.setReplyMarkup(crudAndPaginationButtons(prev));
-                            return sendMessage;
+            if (allByUserId.size() > 0) {
+                long firstBirthDayId = allByUserId.get(0).getId();
+                long lastBirthDayId = allByUserId.get(allByUserId.size() - 1).getId();
+                if (currentBirthDayId > firstBirthDayId && currentBirthDayId <= lastBirthDayId) {
+                    long prev = currentBirthDayId - 1;
+                    Optional<BirthDay> birthDayOptional = birthDayRepository.findById(prev);
+                    if (birthDayOptional.isPresent()) {
+                        BirthDay birthDay = birthDayOptional.get();
+                        sendMessage.setChatId(String.valueOf(chatId));
+                        sendMessage.setText("Tug'ilgan sanasi:  " + birthDay.getBirthDayDate() + "\nIsmi va familyasi:  " + birthDay.getFullName());
+                        sendMessage.setReplyMarkup(crudAndPaginationButtons(prev));
+                        return sendMessage;
+                    } else {
+                        while (firstBirthDayId != prev) {
+                            prev--;
+                            Optional<BirthDay> byId = birthDayRepository.findById(prev);
+                            if (byId.isPresent()) {
+                                BirthDay birthDay = byId.get();
+                                sendMessage.setChatId(String.valueOf(chatId));
+                                sendMessage.setText("Tug'ilgan sanasi:  " + birthDay.getBirthDayDate() + "\nIsmi va familyasi:  " + birthDay.getFullName());
+                                sendMessage.setReplyMarkup(crudAndPaginationButtons(prev));
+                                return sendMessage;
+                            }
                         }
                     }
                     sendMessage.setChatId(String.valueOf(chatId));
                     sendMessage.setText("Tug'ilgan sanasi: " + birthDayRepository.findById(firstBirthDayId).get().getBirthDayDate() + "\nIsmi va familyasi:  " + birthDayRepository.findById(firstBirthDayId).get().getFullName());
-                    sendMessage.setReplyMarkup(crudAndPaginationButtons(firstBirthDayId));
+                    sendMessage.setReplyMarkup(firstBirthDayBTN(firstBirthDayId));
                     return sendMessage;
                 }
-            } else {
+                }
+             else {
                 Optional<BirthDay> birthDayOptional = birthDayRepository.findById(currentBirthDayId);
                 if (birthDayOptional.isPresent()) {
                     BirthDay birthDay = birthDayOptional.get();
                     sendMessage.setChatId(String.valueOf(chatId));
-                    sendMessage.setText("Ismi va familyasi: " + birthDay.getFullName() + "\nTug'ilgan sanasi:  " + birthDay.getBirthDayDate());
+                    sendMessage.setText("Tug'ilgan sanasi: " + birthDay.getBirthDayDate() + "\nIsmi va familyasi:  " + birthDay.getFullName());
                     sendMessage.setReplyMarkup(firstBirthDayBTN(currentBirthDayId));
                     return sendMessage;
                 }
-
             }
         }
-//        sendMessage.setChatId(String.valueOf(chatId));
-//        sendMessage.setText("Siz hamma do'stlaringizni o'chirib bo'lgansiz! /start");
-//        return sendMessage;
-           return null;
+        sendMessage.setChatId(String.valueOf(chatId));
+        sendMessage.setText("Siz hamma do'stlaringizni o'chirib bo'lgansiz! /start");
+        return sendMessage;
     }
 
     private InlineKeyboardMarkup firstBirthDayBTN(long birthId) {
