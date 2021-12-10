@@ -38,6 +38,7 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
 
     private String fullName = "";
     private long birthId = 0;
+    private int count = 0;
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -47,7 +48,7 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
 
         String regexFullName = "^[a-zA-Z0-9 _$!']+$";
         Pattern patternFullName = Pattern.compile(regexFullName);
-        boolean isDate = true;
+        boolean isDate = false;
         if (update.hasMessage()) {
             Message message = update.getMessage();
             long chatId = message.getChatId();
@@ -56,33 +57,48 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                 if (messageText.equalsIgnoreCase("/start") || message.getText().equalsIgnoreCase("/")) {
                     SendMessage sendMessage = telegramBotService.useBot(chatId);
                     try {
+                        count++;
                         execute(sendMessage);
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                     }
                 } else if (patternFullName.matcher(messageText).matches()) {
-                    fullName = messageText;
-                    SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(chatId);
-                    sendMessage.setText("Tug'ilgan sanasini kun/oy/yil ko'rinishida kiriting!");
-                    try {
-                        isDate = true;
-                        execute(sendMessage);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
-                } else if (isDate) {
-                    if (pattern.matcher(messageText).matches()){
-                        SendMessage sendMessage = telegramBotService.checkDate(messageText, message, fullName, birthId);
+                    if (count>0){
+                        fullName = messageText;
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(String.valueOf(chatId));
+                        sendMessage.setText("Tug'ilgan sanasini kun/oy/yil ko'rinishida kiriting!" +
+                                "\n sanani kiritayotganingizda asosan kun bilan oyni to'g'ri kiritishingiz yetarli.");
                         try {
-                            isDate = false;
+                            count++;
                             execute(sendMessage);
                         } catch (TelegramApiException e) {
                             e.printStackTrace();
                         }
                     }else {
                         SendMessage sendMessage = new SendMessage();
-                        sendMessage.setChatId(chatId);
+                        sendMessage.setChatId(String.valueOf(chatId));
+                        sendMessage.setText("Iltimos avval /start yoki / ni kiriting!");
+                        try {
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                } else if (pattern.matcher(messageText).matches()) {
+                    if (pattern.matcher(messageText).matches()){
+                        SendMessage sendMessage = telegramBotService.checkDate(messageText, message, fullName, birthId);
+                        try {
+                            isDate = true;
+                            birthId = 0;
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                    }else {
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(String.valueOf(chatId));
                         sendMessage.setText("Iltimos, tug'ilgan sanani raqamlar orqali," +
                         " tizimda ko'rsatilgan \uD83D\uDC49 (kun/oy/yil) tartibda qaytadan kiriting!");
                         try {
@@ -92,14 +108,23 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                             e.printStackTrace();
                         }
                     }
-
-
+                }else if (!isDate && count>=0){
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(String.valueOf(chatId));
+                    sendMessage.setText("Iltimos, tug'ilgan sanani raqamlar orqali," +
+                            " tizimda ko'rsatilgan \uD83D\uDC49 (kun/oy/yil) tartibda qaytadan kiriting!");
+                    try {
+                        isDate = false;
+                        execute(sendMessage);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } else if (update.hasCallbackQuery()) {
             CallbackQuery callbackQuery = update.getCallbackQuery();
             long chatId = callbackQuery.getMessage().getChatId();
-            if (callbackQuery.getData().equalsIgnoreCase("Botdan foydalanish!")) {
+            if (callbackQuery.getData().equalsIgnoreCase("Muhim sanalarni qo'shish!")) {
                 SendMessage sendMessage = telegramBotService.saveUser(callbackQuery, chatId);
                 try {
                     execute(sendMessage);
@@ -108,9 +133,10 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                 }
             } else if (callbackQuery.getData().equalsIgnoreCase("Yana do'stlarni saqlash!")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(chatId);
+                sendMessage.setChatId(String.valueOf(chatId));
                 sendMessage.setText("Do'stingizning ismi va familyasini kiriting! masalan: Sherzod Nurmatov ko'rinishida");
                 try {
+                    count++;
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
@@ -131,7 +157,7 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                 }
             } else if (callbackQuery.getData().equalsIgnoreCase("Orqaga!")) {
                 SendMessage sendMessage = new SendMessage();
-                sendMessage.setChatId(chatId);
+                sendMessage.setChatId(String.valueOf(chatId));
                 sendMessage.setText("Orqaga qaytish uchun /start ni bosing!");
                 try {
                     execute(sendMessage);
@@ -156,6 +182,7 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                 SendMessage add = telegramBotService.add(chatId);
                 try {
                     execute(add);
+                    count++;
                     birthId = 0;
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
@@ -217,7 +244,7 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
             sendMessage.setReplyMarkup(inlineKeyboardMarkup);
             for (BirthDay birthDay : selectBirthList) {
                 sendMessage.setChatId(birthDay.getUser().getChatId());
-                sendMessage.setText("Bugun " + birthDay.getFullName() + " ning tug'ilgan kuni! Tabriklab qo'yishni unutmang!");
+                sendMessage.setText("Bugun " + birthDay.getBirthDayDate().getDayOfMonth() +" - " +  birthDay.getBirthDayDate().getMonth() +"  "+ birthDay.getFullName() + " ning tug'ilgan kuni! Tabriklab qo'yishni unutmang!");
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {

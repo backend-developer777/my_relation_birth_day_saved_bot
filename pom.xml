@@ -52,14 +52,22 @@
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots-spring-boot-starter -->
+<!--        <dependency>-->
+<!--            <groupId>org.telegram</groupId>-->
+<!--            <artifactId>telegrambots-spring-boot-starter</artifactId>-->
+<!--            <version>4.9.1</version>-->
+<!--        </dependency>-->
+
+        <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots-spring-boot-starter -->
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots-spring-boot-starter</artifactId>
-            <version>4.9.1</version>
+            <version>5.4.0</version>
         </dependency>
 
 
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.telegram/telegrambots &ndash;&gt;-->
+
+        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.telegram/telegrambots &ndash;&gt;-->
 <!--        <dependency>-->
 <!--            <groupId>org.telegram</groupId>-->
 <!--            <artifactId>telegrambots</artifactId>-->

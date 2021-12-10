@@ -24,6 +24,8 @@ public interface BirthDayRepository extends JpaRepository<BirthDay, Long> {
 
     List<BirthDay> findAllByUser_Username(String username);
 
+    List<BirthDay> findAllByUser_ChatId(String chatId);
+
 
 
 

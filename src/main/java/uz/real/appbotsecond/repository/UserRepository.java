@@ -10,8 +10,11 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByUsername(String username);
+    Optional<User> findByChatId(String chatId);
 
     User getByUsername(String username);
+
+    User getByChatId(String chatId);
 
     // 500 X.A
 
