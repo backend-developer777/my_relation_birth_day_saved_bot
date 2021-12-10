@@ -178,6 +178,16 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                 long lastBirthDayId = allByUserId.get(allByUserId.size() - 1).getId();
                 if (currentBirthDayId > firstBirthDayId && currentBirthDayId <= lastBirthDayId) {
                     long prev = currentBirthDayId - 1;
+                    if (prev==firstBirthDayId){
+                        Optional<BirthDay> byId = birthDayRepository.findById(prev);
+                        if (byId.isPresent()){
+                            BirthDay birthDay = byId.get();
+                            sendMessage.setChatId(String.valueOf(chatId));
+                            sendMessage.setText("Tug'ilgan sanasi: " + birthDay.getBirthDayDate() + "\nIsmi va familyasi:  " + birthDay.getFullName());
+                            sendMessage.setReplyMarkup(firstBirthDayBTN(prev));
+                            return sendMessage;
+                        }
+                    }
                     Optional<BirthDay> birthDayOptional = birthDayRepository.findById(prev);
                     if (birthDayOptional.isPresent()) {
                         BirthDay birthDay = birthDayOptional.get();
@@ -206,14 +216,10 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                         sendMessage.setChatId(String.valueOf(chatId));
                         sendMessage.setText("Tug'ilgan sanasi: " + birthDay.getBirthDayDate() + "\nIsmi va familyasi:  " + birthDay.getFullName());
                         sendMessage.setReplyMarkup(firstBirthDayBTN(currentBirthDayId));
+                        return sendMessage;
                     }
                 }
             }
-        else {
-            sendMessage.setChatId(String.valueOf(chatId));
-            sendMessage.setText("Siz hamma do'stlaringizni o'chirib bo'lgansiz! /start");
-            return sendMessage;
-        }
         return null;
     }
 
@@ -259,6 +265,16 @@ public class TelegramBotServiceImpl implements TelegramBotService {
             long lastBirthId = allByUser_chatId.get(allByUser_chatId.size() - 1).getId();
             if (currentBirthId < lastBirthId) {
                 long nextBirthId = currentBirthId + 1;
+                if (nextBirthId==lastBirthId){
+                    Optional<BirthDay> birthDayNextOptional = birthDayRepository.findById(nextBirthId);
+                    if (birthDayNextOptional.isPresent()) {
+                        BirthDay birthDay = birthDayNextOptional.get();
+                        sendMessage.setChatId(String.valueOf(chatId));
+                        sendMessage.setText("Tug'ilgan sanasi:  " + birthDay.getBirthDayDate() + "\nIsmi va familiyasi:  " + birthDay.getFullName());
+                        sendMessage.setReplyMarkup(lastBirthDayBTN(nextBirthId));
+                        return sendMessage;
+                    }
+                }
                 Optional<BirthDay> birthDayOptional = birthDayRepository.findById(nextBirthId);
                 if (birthDayOptional.isPresent()) {
                     BirthDay birthDay = birthDayOptional.get();

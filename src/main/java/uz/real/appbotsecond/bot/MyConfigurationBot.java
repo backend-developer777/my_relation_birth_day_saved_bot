@@ -85,7 +85,6 @@ public class MyConfigurationBot extends TelegramLongPollingBot {
                             e.printStackTrace();
                         }
                     }
-
                 } else if (pattern.matcher(messageText).matches()) {
                     if (pattern.matcher(messageText).matches()){
                         SendMessage sendMessage = telegramBotService.checkDate(messageText, message, fullName, birthId);
