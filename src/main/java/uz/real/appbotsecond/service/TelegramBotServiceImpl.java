@@ -61,7 +61,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     public SendMessage saveUser(CallbackQuery callbackQuery, long chatId) {
         SendMessage sendMessage = new SendMessage();
         User from = callbackQuery.getFrom();
-        Optional<uz.real.appbotsecond.model.User> byUsername = userRepository.findByChatId(String.valueOf(from.getId()));
+        Optional<uz.real.appbotsecond.model.User> byUsername = userRepository.findByChatId(String.valueOf(chatId));
         if (byUsername.isPresent()) {
             sendMessage.setChatId(String.valueOf(chatId));
             sendMessage.setText("Siz avval ham ushbu botdan foydalangansiz, marxamat do'stingizning ismi va familyasini kiriting! \nmasalan Sherzod Nurmatov ko'rinishida");
@@ -122,7 +122,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                     BirthDay savedBirthDay = new BirthDay();
                     savedBirthDay.setBirthDayDate(birthDayDate);
                     savedBirthDay.setFullName(fullName);
-                    savedBirthDay.setUser(userRepository.getByUsername(message.getFrom().getUserName()));
+                    savedBirthDay.setUser(userRepository.getByChatId(String.valueOf(message.getFrom().getId())));
                     birthDayRepository.save(savedBirthDay);
                     sendMessage.setChatId(String.valueOf(message.getChatId()));
                     sendMessage.setText("Tabriklaymiz siz do'stingizni tug'ilgan kunini muvafaqqiyatli saqladingiz, botning o'zi sizga xabar yuboradi!");
@@ -157,7 +157,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
                 BirthDay birthDay = birthDayList.get(birthDayList.size() - 1);
                 long currentId = birthDay.getId();
                 sendMessage.setChatId(String.valueOf(chatId));
-                sendMessage.setText("Ismi va familyasi:  " + birthDay.getFullName() + "\nTug'ilgan sanasi:  " + birthDay.getBirthDayDate());
+                sendMessage.setText("Tug'ilgan sanasi:  " + birthDay.getBirthDayDate() + "\nIsmi va familyasi:  " + birthDay.getFullName());
                 sendMessage.setReplyMarkup(crudAndPaginationButtons(currentId));
                 return sendMessage;
             }
@@ -172,7 +172,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     public SendMessage prev(String birthId, long chatId, CallbackQuery callbackQuery) {
         SendMessage sendMessage = new SendMessage();
         long currentBirthDayId = Long.parseLong(birthId.substring(1));
-            List<BirthDay> allByUserId = birthDayRepository.findAllByUser_ChatId(String.valueOf(callbackQuery.getFrom().getId()));
+            List<BirthDay> allByUserId = birthDayRepository.findAllByUser_ChatId(String.valueOf(chatId));
             if (allByUserId.size() > 0) {
                 long firstBirthDayId = allByUserId.get(0).getId();
                 long lastBirthDayId = allByUserId.get(allByUserId.size() - 1).getId();
@@ -260,7 +260,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
     public SendMessage next(String birthId, long chatId, CallbackQuery callbackQuery) {
         SendMessage sendMessage = new SendMessage();
         long currentBirthId = Long.parseLong(birthId.substring(1));
-        List<BirthDay> allByUser_chatId = birthDayRepository.findAllByUser_ChatId(String.valueOf(callbackQuery.getFrom().getId()));
+        List<BirthDay> allByUser_chatId = birthDayRepository.findAllByUser_ChatId(String.valueOf(chatId));
         if (allByUser_chatId.size()>0){
             long lastBirthId = allByUser_chatId.get(allByUser_chatId.size() - 1).getId();
             if (currentBirthId < lastBirthId) {
@@ -340,8 +340,6 @@ public class TelegramBotServiceImpl implements TelegramBotService {
         inlineRows.add(keyboardButtonListEditAndView);
         inlineKeyboardMarkup.setKeyboard(inlineRows);
         return inlineKeyboardMarkup;
-
-
     }
 
     @Override
@@ -434,7 +432,7 @@ public class TelegramBotServiceImpl implements TelegramBotService {
         List<List<InlineKeyboardButton>> inlineRows = new LinkedList<>();
         inlineRows.add(keyboardButtonList);
         inlineKeyboardMarkup.setKeyboard(inlineRows);
-        List<BirthDay> allByUser_chatId = birthDayRepository.findAllByUser_ChatId(String.valueOf(callbackQuery.getFrom().getId()));
+        List<BirthDay> allByUser_chatId = birthDayRepository.findAllByUser_ChatId(String.valueOf(chatId));
         if (allByUser_chatId.size() > 0) {
             List<ResBirthDay> resBirthDayList = new LinkedList<>();
             for (BirthDay birthDay : allByUser_chatId) {
